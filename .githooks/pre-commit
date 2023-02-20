@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# This hooks will reformat Terraform code and update the README file.
+#
+
+[[ -f "$(which terraform)" ]] || (echo 1>&2 'Git Hooks (pre-commit): Terraform not in $PATH, can''t reformat.' && exit 1)
+terraform fmt -check 2>/dev/null || (echo 1>&2 'Git Hooks (pre-commit): Please run `terraform fmt` before committing.' && exit 1)
+
+[[ -f "$(which terraform-docs)" ]] || (echo 1>&2 'Git Hooks (pre-commit): Terraform-docs not in $PATH, can''t update README file.' && exit 1)
+terraform-docs markdown --config .terraform-docs.yaml --output-check . 1>/dev/null  2>/dev/null || (
+  echo 1>&2 'Git Hooks (pre-commit): Terraform-docs README file is out of date.'
+  echo 1>&2 'Please run `terraform-docs -c .terraform-docs.yaml` before committing '
+  exit 1
+)
